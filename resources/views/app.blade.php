@@ -11,7 +11,8 @@
 
         <!-- Scripts -->
         @routes
-        @vite('resources/js/app.js')
+        <link rel="stylesheet" href="{{ mix('css/app.css') }}">
+        <script src="{{ mix('js/app.js') }}" defer></script>
         @inertiaHead
     </head>
     <body class="font-sans antialiased">

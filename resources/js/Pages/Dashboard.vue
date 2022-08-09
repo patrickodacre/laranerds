@@ -7,7 +7,7 @@ import Welcome from '@/Jetstream/Welcome.vue';
     <AppLayout title="Dashboard">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Dashboard
+                Dashboard!! This is great
             </h2>
         </template>
 
