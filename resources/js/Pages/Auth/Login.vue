@@ -1,89 +1,93 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
-import JetAuthenticationCard from '@/Jetstream/AuthenticationCard.vue';
-import JetAuthenticationCardLogo from '@/Jetstream/AuthenticationCardLogo.vue';
-import JetButton from '@/Jetstream/Button.vue';
-import JetInput from '@/Jetstream/Input.vue';
-import JetCheckbox from '@/Jetstream/Checkbox.vue';
-import JetLabel from '@/Jetstream/Label.vue';
-import JetValidationErrors from '@/Jetstream/ValidationErrors.vue';
+// import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
 
-defineProps({
-    canResetPassword: Boolean,
-    status: String,
-});
+// defineProps({
+    // canResetPassword: Boolean,
+    // status: String,
+// });
 
-const form = useForm({
-    email: '',
-    password: '',
-    remember: false,
-});
+// const form = useForm({
+    // email: '',
+    // password: '',
+    // remember: false,
+// });
 
-const submit = () => {
-    form.transform(data => ({
-        ...data,
-        remember: form.remember ? 'on' : '',
-    })).post(route('login'), {
-        onFinish: () => form.reset('password'),
-    });
-};
+// const submit = () => {
+    // form.transform(data => ({
+        // ...data,
+        // remember: form.remember ? 'on' : '',
+    // })).post(route('login'), {
+        // onFinish: () => form.reset('password'),
+    // });
+// };
 </script>
 
 <template>
-    <Head title="Log in" />
+    <div class="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xxl-4 col-lg-5">
+                    <div class="card">
 
-    <JetAuthenticationCard>
-        <template #logo>
-            <JetAuthenticationCardLogo />
-        </template>
+                        <!-- Logo -->
+                        <div class="card-header pt-4 pb-4 text-center bg-primary">
+                            <a href="index.html">
+                                <span><img src="modern-demo-assets/images/logo.png" alt="" height="18"></span>
+                            </a>
+                        </div>
 
-        <JetValidationErrors class="mb-4" />
+                        <div class="card-body p-4">
 
-        <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
-            {{ status }}
+                            <div class="text-center w-75 m-auto">
+                                <h4 class="text-dark-50 text-center mt-0 fw-bold">Sign In</h4>
+                                <p class="text-muted mb-4">Enter your email address and password to access admin panel.</p>
+                            </div>
+
+                            <form action="#">
+
+                                <div class="mb-3">
+                                    <label for="emailaddress" class="form-label">Email address</label>
+                                    <input class="form-control" type="email" id="emailaddress" required="" placeholder="Enter your email">
+                                </div>
+
+                                <div class="mb-3">
+                                    <a href="pages-recoverpw.html" class="text-muted float-end"><small>Forgot your password?</small></a>
+                                    <label for="password" class="form-label">Password</label>
+                                    <div class="input-group input-group-merge">
+                                        <input type="password" id="password" class="form-control" placeholder="Enter your password">
+                                        <div class="input-group-text" data-password="false">
+                                            <span class="password-eye"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 mb-3">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="checkbox-signin" checked>
+                                        <label class="form-check-label" for="checkbox-signin">Remember me</label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 mb-0 text-center">
+                                    <button class="btn btn-primary" type="submit"> Log In </button>
+                                </div>
+
+                            </form>
+                        </div> <!-- end card-body -->
+                    </div>
+                    <!-- end card -->
+
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <p class="text-muted">Don't have an account? <a href="pages-register.html" class="text-muted ms-1"><b>Sign Up</b></a></p>
+                        </div> <!-- end col -->
+                    </div>
+                    <!-- end row -->
+
+                </div> <!-- end col -->
+            </div>
+            <!-- end row -->
         </div>
-
-        <form @submit.prevent="submit">
-            <div>
-                <JetLabel for="email" value="Email" />
-                <JetInput
-                    id="email"
-                    v-model="form.email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    required
-                    autofocus
-                />
-            </div>
-
-            <div class="mt-4">
-                <JetLabel for="password" value="Password" />
-                <JetInput
-                    id="password"
-                    v-model="form.password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    required
-                    autocomplete="current-password"
-                />
-            </div>
-
-            <div class="block mt-4">
-                <label class="flex items-center">
-                    <JetCheckbox v-model:checked="form.remember" name="remember" />
-                    <span class="ml-2 text-sm text-gray-600">Remember me</span>
-                </label>
-            </div>
-
-            <div class="flex items-center justify-end mt-4">
-                <Link v-if="canResetPassword" :href="route('password.request')" class="underline text-sm text-gray-600 hover:text-gray-900">
-                    Forgot your password?
-                </Link>
-
-                <JetButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Log in
-                </JetButton>
-            </div>
-        </form>
-    </JetAuthenticationCard>
+        <!-- end container -->
+    </div>
 </template>
