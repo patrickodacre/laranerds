@@ -9,7 +9,6 @@ const props = defineProps({
 });
 
 const state = reactive({
-    is_complete: true,
     task: newTask(),
     editing_task: null,
     deleting_task: null,
@@ -50,8 +49,6 @@ function newTask_init()
 function saveTask()
 {
 
-    state.modal_task_form.hide()
-
     if (state.editing_task && state.editing_task.id)
     {
         return axios.patch(`/tasks/${state.editing_task.id}`, {
@@ -67,6 +64,9 @@ function saveTask()
                     state.tasks[i].description = res.data.task.description
                 }
             }
+
+            state.modal_task_form.hide()
+
         })
         .catch(err => {
             debugger
@@ -79,6 +79,8 @@ function saveTask()
     })
     .then(res => {
         state.tasks.push(res.data.task)
+
+        state.modal_task_form.hide()
     })
     .catch(err => {
         debugger
@@ -136,6 +138,7 @@ function deleteTask()
             state.modal_task_delete_confirm.hide()
 
             state.deleting_task = null
+            state.editing_task = null
         })
         .catch(err => {
             debugger
@@ -949,7 +952,7 @@ function deleteTask()
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" @click="deleteTask">Save</button>
+                    <button type="button" class="btn btn-primary" @click="deleteTask">Confirm</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
