@@ -1,1 +1,1 @@
-var quill=new Quill("#bubble-editor",{theme:"bubble"});
+// var quill=new Quill("#bubble-editor",{theme:"bubble"});

@@ -31,13 +31,6 @@
 
         @if(auth()->user())
 
-            <link href="assets/css/vendor/quill.bubble.css" rel="stylesheet" type="text/css" />
-            <link href="assets/css/vendor/quill.core.css" rel="stylesheet" type="text/css" />
-            <link href="assets/css/vendor/quill.snow.css" rel="stylesheet" type="text/css" />
-            <!-- quill js -->
-            <script src="assets/js/vendor/quill.min.js" defer></script>
-            <!-- Init js-->
-            <script src="assets/js/pages/demo.tasks.js" defer></script>
 
         @endif
 
