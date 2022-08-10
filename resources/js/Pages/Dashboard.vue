@@ -1,7 +1,146 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import Welcome from '@/Jetstream/Welcome.vue';
 import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
+import { reactive, onMounted } from 'vue'
+
+const props = defineProps({
+    tasks: Array,
+    user: Object,
+});
+
+const state = reactive({
+    is_complete: true,
+    task: newTask(),
+    editing_task: null,
+    deleting_task: null,
+    tasks: [],
+
+    modal_task_form: null,
+    modal_task_delete_confirm: null,
+})
+
+
+onMounted(() => {
+
+    state.tasks = JSON.parse(JSON.stringify(props.tasks))
+
+    state.modal_task_delete_confirm = new window.bootstrap.Modal('#modal_task_delete_confirm', {})
+    state.modal_task_delete_confirm._element.addEventListener('hide.bs.modal', () => {})
+
+
+    state.modal_task_form = new window.bootstrap.Modal('#modal_task_form', {})
+    state.modal_task_form._element.addEventListener('hide.bs.modal', () => {})
+})
+
+function newTask()
+{
+    return {
+        title: null,
+        description: null
+    }
+}
+
+function newTask_init()
+{
+    state.task = newTask()
+    state.editing_task = null
+    state.modal_task_form.show()
+}
+
+function saveTask()
+{
+
+    state.modal_task_form.hide()
+
+    if (state.editing_task && state.editing_task.id)
+    {
+        return axios.patch(`/tasks/${state.editing_task.id}`, {
+            title: state.editing_task.title,
+            description: state.editing_task.description,
+        })
+        .then(res => {
+            for (let i = 0; i < state.tasks.length; i++)
+            {
+                if (res.data.task.id === state.tasks[i].id)
+                {
+                    state.tasks[i].title = res.data.task.title
+                    state.tasks[i].description = res.data.task.description
+                }
+            }
+        })
+        .catch(err => {
+            debugger
+        })
+    }
+
+    return axios.post(`/teams/${props.user.current_team_id}/tasks`, {
+        title: state.task.title,
+        description: state.task.description,
+    })
+    .then(res => {
+        state.tasks.push(res.data.task)
+    })
+    .catch(err => {
+        debugger
+    })
+
+}
+
+function editTask(_task)
+{
+    state.editing_task = JSON.parse(JSON.stringify(_task))
+}
+
+function editTask_cancel(_task)
+{
+    state.editing_task = null
+}
+
+function toggleCompleteTask(task)
+{
+
+    axios.patch(`tasks/${task.id}`, {
+        is_complete: task.is_complete
+    })
+        .then(res => {
+            for (let i = 0; i < state.tasks.length; i++)
+            {
+                if (res.data.task.id === state.tasks[i].id)
+                {
+                    state.tasks[i].is_complete = res.data.task.is_complete
+                }
+            }
+        })
+        .catch(err => {
+            debugger
+        })
+}
+
+function deleteTask_init(_task)
+{
+    state.deleting_task = JSON.parse(JSON.stringify(_task))
+    state.modal_task_delete_confirm.show()
+}
+
+function deleteTask()
+{
+    if (! state.deleting_task || ! state.deleting_task.id)
+    {
+        return
+    }
+
+    return axios.delete(`/tasks/${state.deleting_task.id}`)
+        .then(res => {
+            state.tasks = state.tasks.filter(t => t.id != res.data.task_id)
+
+            state.modal_task_delete_confirm.hide()
+
+            state.deleting_task = null
+        })
+        .catch(err => {
+            debugger
+        })
+}
 
 </script>
 
@@ -30,9 +169,88 @@ import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
                         </form>
                     </div>
                 </div>
-                <h4 class="page-title">Tasks <a href="#" class="btn btn-success btn-sm ms-3">Add New</a></h4>
+                <h4 class="page-title">Tasks <a href="#" class="btn btn-success btn-sm ms-3" @click="newTask_init">Add New</a></h4>
             </div>
             <!-- end page title -->
+
+            <!-- New Tasks Panel -->
+            <div class="mt-2">
+                <h5 class="m-0 pb-2">
+                    <a class="text-dark" data-bs-toggle="collapse" href="#todayTasks" role="button" aria-expanded="false" aria-controls="todayTasks">
+                        <i class='uil uil-angle-down font-18'></i>New <span class="text-muted">({{state.tasks.length}})</span>
+                    </a>
+                </h5>
+
+                <div class="collapse show" id="todayTasks">
+                    <div class="card mb-0">
+                        <div class="card-body">
+                            <!-- task -->
+                            <div
+                                v-for="task in state.tasks"
+                                :key="task.id"
+                                class="row justify-content-sm-between">
+                                <div class="col-lg-6 mb-2 mb-lg-0 d-flex align-items-center">
+                                    <div
+                                        v-show="!state.editing_task || state.editing_task.id !== task.id"
+                                        @click="editTask(task)"
+                                        class="ln-icon-btn me-3"
+                                        >
+                                        <div class="mdi mdi-pencil"></div>
+                                    </div>
+                                    <div
+                                        v-show="state.editing_task && state.editing_task.id === task.id"
+                                        @click="editTask_cancel"
+                                        class="ln-icon-btn me-3"
+                                        >
+
+                                        <div class="mdi mdi-cancel"></div>
+                                    </div>
+
+
+                                    <div class="form-check">
+                                        <input
+                                            @change="toggleCompleteTask(task)"
+                                            v-model="task.is_complete"
+                                            type="checkbox"
+                                            class="form-check-input"
+                                            :id="task.id"
+                                            >
+                                        <label
+                                            class="form-check-label"
+                                            :for="task.id">
+                                            {{ task.title }}
+                                        </label>
+                                    </div> <!-- end checkbox -->
+                                </div> <!-- end col -->
+                                <div class="col-lg-6 d-flex justify-content-between align-items-center">
+                                    <div id="tooltip-container">
+                                        <img src="assets/images/users/avatar-9.jpg" alt="image" class="avatar-xs rounded-circle me-1"
+                                        data-bs-container="#tooltip-container" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Assigned to Arya S" />
+                                    </div>
+                                    <div>
+                                        <ul class="list-inline font-13 text-end mb-0">
+                                            <li class="list-inline-item">
+                                                <i class='uil uil-schedule font-16 me-1'></i> Today 10am
+                                            </li>
+                                            <li class="list-inline-item ms-1">
+                                                <i class='uil uil-align-alt font-16 me-1'></i> 3/7
+                                            </li>
+                                            <li class="list-inline-item ms-1">
+                                                <i class='uil uil-comment-message font-16 me-1'></i> 21
+                                            </li>
+                                            <li class="list-inline-item ms-2">
+                                                <span class="badge badge-danger-lighten p-1">High</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div> <!-- end .d-flex-->
+                            </div>
+                            <!-- end task -->
+                        </div> <!-- end card-body-->
+                    </div> <!-- end card -->
+                </div> <!-- end .collapse-->
+            </div> <!-- end .mt-2-->
+
 
             <!-- tasks panel -->
             <div class="mt-2">
@@ -417,7 +635,10 @@ import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
         </div> <!-- end col -->
 
         <!-- task details -->
-        <div class="col-xxl-4">
+        <!-- Populate when Task is clicked -->
+        <div
+            v-show="state.editing_task"
+            class="col-xxl-4">
             <div class="card">
                 <div class="card-body">
                     <div class="dropdown card-widgets">
@@ -439,7 +660,7 @@ import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
                             </a>
                             <div class="dropdown-divider"></div>
                             <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item text-danger">
+                            <a @click="deleteTask_init(state.editing_task)" class="dropdown-item text-danger">
                                 <i class='uil uil-trash-alt me-1'></i>Delete
                             </a>
                         </div> <!-- end dropdown menu-->
@@ -457,7 +678,14 @@ import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
                     <div class="row">
                         <div class="col">
 
-                            <h4>Draft the new contract document for sales team</h4>
+                            <h4>
+                                <input v-if="state.editing_task"
+                                    v-model="state.editing_task.title"
+                                    type="text"
+                                    class="form-input"
+                                    style="border: 0; border-bottom: 1px solid #d5d5d5;"
+                                     />
+                            </h4>
 
                             <div class="row">
                                 <div class="col-6">
@@ -476,12 +704,19 @@ import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
 
                                 <div class="col-6">
                                     <!-- start due date -->
-                                    <p class="mt-2 mb-1 text-muted">Due Date</p>
-                                    <div class="d-flex">
+                                    <p class="mt-2 mb-1 text-muted">
                                         <i class='uil uil-schedule font-18 text-success me-1'></i>
+                                        Due Date
+                                    </p>
+                                    <div class="d-flex">
                                         <div>
                                             <h5 class="mt-1 font-14">
-                                                Today 10am
+                                                <!-- Single Date Picker -->
+                                                <div class="mb-3">
+                                                    <input type="text"
+                                                        class="form-control date" id="date-picker"
+                                                        data-toggle="date-picker" data-single-date-picker="true">
+                                                </div>
                                             </h5>
                                         </div>
                                     </div>
@@ -490,29 +725,22 @@ import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
                             </div> <!-- end row -->
 
                             <!-- task description -->
-                            <div class="row mt-3">
+                            <div class="row mt-3" v-if="state.editing_task">
                                 <div class="col">
-                                    <div class="border rounded">
-                                        <div id="bubble-editor" style="height: 130px;">
-                                            <h3>This is an simple editable area.</h3>
-                                            <p><br></p>
-                                            <ul>
-                                                <li>
-                                                    Select a text to reveal the toolbar.
-                                                </li>
-                                                <li>
-                                                    Edit rich document on-the-fly, so elastic!
-                                                </li>
-                                            </ul>
-                                            <p><br></p>
-                                            <p>
-                                                End of simple area
-                                            </p>
-                                        </div> <!-- end Snow-editor-->
-                                    </div>
+                                    <textarea
+                                        v-model="state.editing_task.description"
+                                        >
+                                    </textarea> <!-- end Snow-editor-->
+
                                 </div> <!-- end col -->
                             </div>
                             <!-- end task description -->
+
+                            <div class="d-flex align-items-center justify-content-end mb-3">
+                                <button
+                                    @click="saveTask"
+                                    class="btn btn-success">Save</button>
+                            </div>
 
                             <!-- start sub tasks/checklists -->
                             <h5 class="mt-4 mb-2 font-16">Checklists/Sub-tasks</h5>
@@ -662,6 +890,70 @@ import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
         </div> <!-- end col -->
     </div>
     <!-- end row-->
+
+
+
+    <!-- Modals -->
+
+    <div
+        id="modal_task_form"
+        class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_task_form_label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-colored-header bg-primary">
+                    <h4 class="modal-title" id="modal_task_form_label">Modal Heading</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+
+
+
+                    <div class="mb-3">
+                        <label for="task_title" class="form-label">Title</label>
+                        <input
+                            id="task_title"
+                            class="form-control"
+                            v-model="state.task.title"
+
+                            type="text"
+                            >
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="task_description" class="form-label">Description</label>
+                        <input
+                            v-model="state.task.description"
+                            type="text" id="task_description" class="form-control">
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="saveTask">Save</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div
+        id="modal_task_delete_confirm"
+        class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal_task_delete_confirm_label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-colored-header bg-primary">
+                    <h4 class="modal-title" id="modal_task_delete_confirm_label">Delete Task</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this task?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="deleteTask">Save</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 
 </AppLayout>
 </template>

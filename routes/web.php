@@ -29,7 +29,10 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', 'PageController@dashboard')->name('dashboard');
+
+    Route::post('/teams/{team}/tasks', 'TaskController@createTask')->name('task_create');
+    Route::patch('/tasks/{task}', 'TaskController@patchTask')->name('task_patch');
+    Route::delete('/tasks/{task}', 'TaskController@deleteTask')->name('task_delete');
+
 });

@@ -26,7 +26,7 @@
         <link href="assets/css/app-modern.min.css" rel="stylesheet" type="text/css" id="app-style" />
 
         <!-- bundle -->
-        <script src="assets/js/vendor.min.js" defer></script>
+        <script src="assets/js/vendor.min.js"></script>
         <script src="assets/js/app.min.js" defer></script>
 
         @if(auth()->user())
