@@ -23,4 +23,9 @@ class PageController extends Controller
 
         return Inertia::render('Dashboard', $data);
     }
+
+    public function modalDemo()
+    {
+        return Inertia::render('ModalDemo');
+    }
 }

@@ -35,4 +35,6 @@ Route::middleware([
     Route::patch('/tasks/{task}', 'TaskController@patchTask')->name('task_patch');
     Route::delete('/tasks/{task}', 'TaskController@deleteTask')->name('task_delete');
 
+    Route::get('modal-demo', 'PageController@modalDemo');
+
 });
