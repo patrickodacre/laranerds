@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/inertia-vue3';
 import { reactive, onMounted } from 'vue'
+import Modal from '@/Shared/Modal.vue'
 
 const state = reactive({
 	modal_demo: null,
@@ -108,19 +109,19 @@ function saveClient()
         </ul>
     </div>
 
-<!-- Modal -->
-<div class="modal fade" id="modal_demo" tabindex="-1" aria-labelledby="modal_demo_label" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modal_demo_label">
+
+    <Modal
+        id="modal_demo"
+        :custom_classes="['modal-lg']"
+        :close_func="closeModal"
+    >
+
+        <template #title>
             <span v-if="state.client_editing && state.client_editing.name">Editing {{ state.client_editing.name }}</span>
             <span v-else>Create a New Client</span>
-        </h5>
-        <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-      </div>
-      <div class="modal-body">
+        </template>
 
+        <template #body>
             <div class="mb-3">
               <label for="name" class="form-label">Name</label>
               <input
@@ -129,17 +130,17 @@ function saveClient()
                 id="name">
             </div>
 
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
-        <button type="button" class="btn btn-primary" @click="saveClient">
-            <span v-if="state.client_editing && state.client_editing.name">Save Changes</span>
-            <span v-else>Create</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+        </template>
 
+        <template #footer>
+            <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
+            <button type="button" class="btn btn-primary" @click="saveClient">
+                <span v-if="state.client_editing && state.client_editing.name">Save Changes</span>
+                <span v-else>Create</span>
+            </button>
+
+        </template>
+
+    </Modal>
 </AppLayout>
 </template>
