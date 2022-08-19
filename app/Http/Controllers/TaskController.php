@@ -41,7 +41,7 @@ class TaskController extends Controller
             $task->title = $data['title'];
         }
 
-        if (isset($data['description']))
+        if (array_key_exists('description', $data))
         {
             $task->description = $data['description'];
         }
